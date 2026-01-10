@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Кликер на рыбе</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #e0f7fa;
+    }
+
+    #game-container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    button {
+      font-size: 40px;
+      padding: 20px;
+      margin: 20px;
+      cursor: pointer;
+    }
+
+    #stats {
+      margin: 20px 0;
+    }
+
+    .upgrade-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .upgrade-btn:disabled {
+      background-color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <h1>Кликер на рыбе 🐟</h1>
+    <div id="stats">
+      <p>Уровень рыбы: <span id="level">1</span></p>
+      <p>Монеты: <span id="coins">0</span></p>
+      <p>Нажатий: <span id="clicks">0</span></p>
+    </div>
+
+    <button id="fish-btn">🐟</button>
+
+    <div id="upgrades">
+      <button class="upgrade-btn" id="upgrade-level">Улучшить уровень (50 монет)</button>
+      <button class="upgrade-btn" id="upgrade-multiplier">Улучшить множитель до 5 (1000 монет)</button>
+    </div>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+
+    // Инициализация состояния игры
+    let gameState = {
+      level: parseInt(localStorage.getItem('fish_level')) || 1,
+      coins: parseInt(localStorage.getItem('coins')) || 0,
+      clicks: parseInt(localStorage.getItem('clicks')) || 0,
+      multiplier: parseInt(localStorage.getItem('multiplier')) || 1
+    };
+
+    // DOM элементы
+    const levelEl = document.getElementById('level');
+    const coinsEl = document.getElementById('coins');
+    const clicksEl = document.getElementById('clicks');
+    const fishBtn = document.getElementById('fish-btn');
+    const upgradeLevelBtn = document.getElementById('upgrade-level');
+    const upgradeMultBtn = document.getElementById('upgrade-multiplier');
+
+    // Обновление UI
+    function updateUI() {
+      levelEl.textContent = gameState.level;
+      coinsEl.textContent = gameState.coins;
+      clicksEl.textContent = gameState.clicks;
+
+      upgradeLevelBtn.disabled = gameState.coins < 50;
+      upgradeMultBtn.disabled = gameState.coins < 1000;
+    }
+
+    // Нажатие на рыбу
+    fishBtn.addEventListener('click', () => {
+      gameState.coins += gameState.multiplier;
+      gameState.clicks++;
+
+      // Повышение уровня каждые 10 нажатий
+      if (gameState.clicks % 10 === 0) {
+        gameState.level++;
+      }
+
+      updateUI();
+      saveGame();
+    });
+
+    // Улучшение уровня
+    upgradeLevelBtn.addEventListener('click', () => {
+      if (gameState.coins >= 50) {
+        gameState.level++;
+        gameState.coins -= 50;
+        updateUI();
+        saveGame();
+      }
+    });
+
+    // Улучшение множителя
+    upgradeMultBtn.addEventListener('click', () => {
+      if (gameState.coins >= 1000 && gameState.multiplier === 1) {
+        gameState.multiplier = 5;
+        gameState.coins -= 1000;
+        updateUI();
+        saveGame();
+      }
+    });
+
+    // Сохранение данных
+    function saveGame() {
+      localStorage.setItem('fish_level', gameState.level);
+      localStorage.setItem('coins', gameState.coins);
+      localStorage.setItem('clicks', gameState.clicks);
+      localStorage.setItem('multiplier', gameState.multiplier);
+    }
+
+    // Инициализация UI
+    updateUI();
+  </script>
+</body>
+</html>
